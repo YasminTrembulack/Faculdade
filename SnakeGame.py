@@ -67,10 +67,12 @@ def update_player_score(player_name, score):
         lines = file.readlines()
     
     with open(RANKING_FILE, 'w') as file:
+        found = False
         for line in lines:
             name, current_score = line.strip().split(',')
             current_score = int(current_score)
             if name == player_name:
+                found = True
                 if score > current_score:
                     file.write(f'{player_name},{score}\n')
                     updated = True
@@ -78,8 +80,26 @@ def update_player_score(player_name, score):
                     file.write(f'{name},{current_score}\n')
             else:
                 file.write(f'{name},{current_score}\n')
+        
+        # Se não encontrou o jogador no arquivo, adiciona uma nova entrada
+        if not found:
+            file.write(f'{player_name},{score}\n')
+            updated = True
     
+    if updated:
+        load_ranking()
+
     return updated
+
+# Função para carregar o ranking do arquivo para a lista
+def load_ranking():
+    ranking_scores.clear()
+    with open(RANKING_FILE, 'r') as file:
+        for line in file:
+            if line.strip():
+                name, score = line.strip().split(',')
+                ranking_scores.append((name, int(score)))
+    ranking_scores.sort(key=lambda x: x[1], reverse=True)
 
 # Função para solicitar o nome do jogador
 def get_player_name():
@@ -166,7 +186,7 @@ def game(player_name):
         # Controla a velocidade do jogo
         clock.tick(snake_speed)
 
-    # Mostra tela de game over e retorna a pontuação para o ranking
+    # Mostra tela de game over e atualiza a pontuação no ranking
     show_game_over(player_name, score)
 
 # Função para colocar a comida em um lugar aleatório no grid
@@ -181,11 +201,8 @@ def show_game_over(player_name, score):
     draw_text(screen, 'Game Over', 40, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20, WHITE)
     draw_text(screen, f'Pontuação final: {score}', 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20, WHITE)
 
-    if not player_in_ranking(player_name):
-        save_player_score(player_name, 0)
-
     if update_player_score(player_name, score):
-        draw_text(screen, 'Nova pontuação recorde!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60, WHITE)
+        draw_text(screen, 'Recorde de pontuação pessoal!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60, WHITE)
 
     draw_text(screen, 'Pressione qualquer tecla para jogar novamente', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, WHITE)
     pygame.display.update()
@@ -207,33 +224,28 @@ def show_menu():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    return 1  # Jogar
+                    return 1
                 elif event.key == pygame.K_2:
-                    show_ranking()  # Mostrar ranking
+                    show_ranking()
                 elif event.key == pygame.K_3:
                     pygame.quit()
                     sys.exit()
 
 # Função para exibir o ranking
 def show_ranking():
-    while True:
-        screen.fill(BLACK)
-        draw_text(screen, 'Ranking', 40, SCREEN_WIDTH // 2, 50, WHITE)
-        draw_text(screen, 'Pressione qualquer tecla para voltar', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, WHITE)
+    screen.fill(BLACK)
+    draw_text(screen, 'Ranking', 40, SCREEN_WIDTH // 2, 50, WHITE)
 
-        y = 100
-        for i, (name, score) in enumerate(ranking_scores, start=1):
-            draw_text(screen, f'{i}. {name}: {score}', 24, SCREEN_WIDTH // 2, y, WHITE)
-            y += 30
+    # Carrega e exibe as pontuações do ranking
+    load_ranking()
 
-        pygame.display.update()
+    y = 100
+    for i, (name, score) in enumerate(ranking_scores, start=1):
+        draw_text(screen, f'{i}. {name}: {score}', 24, SCREEN_WIDTH // 2, y, WHITE)
+        y += 30
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                return
+    pygame.display.update()
+    wait_for_key()
 
 # Função para esperar até que uma tecla seja pressionada
 def wait_for_key():
@@ -251,29 +263,14 @@ def main():
 
     player_name = get_player_name()
 
-    # Carregar o ranking do arquivo para a lista
-    with open(RANKING_FILE, 'r') as file:
-        for line in file:
-            if line.strip():
-                name, score = line.strip().split(',')
-                ranking_scores.append((name, int(score)))
-
     while True:
         choice = show_menu()
 
         if choice == 1:
             score = game(player_name)
-            # Adiciona a pontuação ao ranking simulado (limitado às 5 melhores pontuações)
-            ranking_scores.append((player_name, score))
-            # Remove entradas com pontuação `None` antes de ordenar
-            ranking_scores = [entry for entry in ranking_scores if entry[1] is not None]
-            ranking_scores.sort(key=lambda x: x[1], reverse=True)
-            ranking_scores = ranking_scores[:5]  # Mantém apenas as 5 melhores pontuações
 
         elif choice == 3:
             pygame.quit()
             sys.exit()
 
-
-if __name__ == '__main__':
-    main()
+main()
