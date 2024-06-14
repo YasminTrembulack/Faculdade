@@ -137,6 +137,8 @@ def get_player_name():
         pygame.display.update()
     
     return player_name
+#Adicionar imagem
+game_over_image = pygame.image.load('game_over_image.jpg')
 
 # Função principal do jogo
 def game(player_name):
@@ -175,6 +177,7 @@ def game(player_name):
         # Verifica se a cobra comeu a comida
         if snake_head == food:
             score += 1
+            eat_sound.play()
             food = place_food()
         else:
             snake.pop()
@@ -315,6 +318,12 @@ def wait_for_key():
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 return
+
+# Adicionar som 
+
+pygame.mixer.init()
+
+eat_sound = pygame.mixer.Sound('eat-sound.ogg')
 
 # Função principal para o fluxo do jogo
 def main():
