@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 
 # Inicialização do Pygame
 pygame.init()
@@ -31,6 +32,10 @@ RANKING_FILE = './ranking.txt'
 
 # Lista de pontuações (simulação de um ranking)
 ranking_scores = []
+
+#Adicionar imagem
+game_over_image = pygame.image.load('gato_game_over.jpg')
+game_over_image = pygame.transform.scale(game_over_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Inicialização da tela
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -137,8 +142,7 @@ def get_player_name():
         pygame.display.update()
     
     return player_name
-#Adicionar imagem
-game_over_image = pygame.image.load('game_over_image.jpg')
+
 
 # Função principal do jogo
 def game(player_name):
@@ -258,16 +262,22 @@ def place_food():
     return (x, y)
 
 # Função para exibir a tela de game over
+# Função para exibir a tela de game over
 def show_game_over(player_name, score):
     screen.fill(BLACK)
-    draw_text(screen, 'Game Over', 40, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20, WHITE)
-    draw_text(screen, f'Pontuação final: {score}', 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20, WHITE)
+    screen.blit(game_over_image, (0, 0))
+    time.sleep(4)
+    draw_text(screen, 'Game Over', 40, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60, WHITE)
+    draw_text(screen, f'Pontuação final: {score}', 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20, WHITE)
 
     if update_player_score(player_name, score):
-        draw_text(screen, 'Nova pontuação recorde!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60, WHITE)
+        draw_text(screen, 'Nova pontuação recorde!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20, WHITE)
 
     draw_text(screen, 'Pressione qualquer tecla para jogar novamente', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, WHITE)
+
     pygame.display.update()
+
+    # Aguarda o jogador pressionar qualquer tecla para continuar
     wait_for_key()
 
 # Função para exibir o menu inicial
