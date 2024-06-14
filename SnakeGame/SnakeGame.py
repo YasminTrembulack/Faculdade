@@ -142,6 +142,8 @@ def get_player_name():
         pygame.display.update()
     
     return player_name
+#Adicionar imagem
+game_over_image = pygame.image.load('gato_game_over.jpg')
 
 
 # Função principal do jogo
