@@ -6,11 +6,14 @@ import random
 pygame.init()
 
 # Definição das cores
+SNAKE_COLOR = (70,116,233,255)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (213, 50, 80)
 GREEN = (0, 255, 0)
 BLUE = (50, 153, 213)
+LIGHT_GREEN = (170,215,81,255)
+DARK_GREEN = (162,209,73,255)
 
 # Configurações da tela
 SCREEN_WIDTH = 600
@@ -24,7 +27,7 @@ INITIAL_SPEED = 8  # Velocidade inicial da cobra
 SNAKE_SPEED = 8  # Velocidade atual da cobra
 
 # Arquivo de ranking
-RANKING_FILE = 'ranking.txt'
+RANKING_FILE = './ranking.txt'
 
 # Lista de pontuações (simulação de um ranking)
 ranking_scores = []
@@ -40,6 +43,15 @@ def draw_text(surface, text, size, x, y, color):
     text_rect = text_surface.get_rect()
     text_rect.center = (x, y)
     surface.blit(text_surface, text_rect)
+
+# Função para desenhar o background xadrezado
+def draw_checkered_background():
+    for row in range(GRID_HEIGHT):
+        for col in range(GRID_WIDTH):
+            if (row + col) % 2 == 0:
+                pygame.draw.rect(screen, LIGHT_GREEN, (col * GRID_SIZE, row * GRID_SIZE, GRID_SIZE, GRID_SIZE))
+            else:
+                pygame.draw.rect(screen, DARK_GREEN, (col * GRID_SIZE, row * GRID_SIZE, GRID_SIZE, GRID_SIZE))
 
 # Função para verificar se o jogador existe no ranking
 def player_in_ranking(player_name):
@@ -129,7 +141,7 @@ def get_player_name():
 # Função principal do jogo
 def game(player_name):
     snake = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
-    snake_direction = (1, 0)
+    snake_direction = (1, 0)  # Direção inicial da cobra (direita)
     snake_speed = SNAKE_SPEED
     food = place_food()
     score = 0
@@ -169,13 +181,13 @@ def game(player_name):
 
         # Preenche o fundo
         screen.fill(BLACK)
+        draw_checkered_background()
 
         # Desenha a comida
         pygame.draw.rect(screen, RED, (food[0] * GRID_SIZE, food[1] * GRID_SIZE, GRID_SIZE, GRID_SIZE))
 
-        # Desenha a cobra
-        for segment in snake:
-            pygame.draw.rect(screen, GREEN, (segment[0] * GRID_SIZE, segment[1] * GRID_SIZE, GRID_SIZE, GRID_SIZE))
+        # Desenha a cobra (passando a direção da cobra para os olhos)
+        draw_snake(snake, snake_direction)
 
         # Desenha a pontuação
         draw_text(screen, f'Pontuação: {score}', 18, SCREEN_WIDTH // 2, 10, WHITE)
@@ -188,6 +200,53 @@ def game(player_name):
 
     # Mostra tela de game over e atualiza a pontuação no ranking
     show_game_over(player_name, score)
+
+# Função para desenhar a cobra
+def draw_snake(snake, snake_direction):
+    for i, segment in enumerate(snake):
+        if i == 0:
+            # Cabeça da cobra com olhos que acompanham a direção
+            x, y = segment
+            pygame.draw.rect(screen, SNAKE_COLOR, (x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE))
+            
+            if snake_direction == (1, 0):  # Direita
+                # Olho direito
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 9, y * GRID_SIZE + 2, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 12, y * GRID_SIZE + 5), 2)
+                
+                # Olho esquerdo
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 9, y * GRID_SIZE + 12, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 12, y * GRID_SIZE + 15), 2)
+            elif snake_direction == (-1, 0):  # Esquerda
+                # Olho direito
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 5, y * GRID_SIZE + 2, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 8, y * GRID_SIZE + 5), 2)
+                
+                # Olho esquerdo
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 5, y * GRID_SIZE + 12, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 8, y * GRID_SIZE + 15), 2)
+            elif snake_direction == (0, -1):  # Cima
+                # Olho direito
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 2, y * GRID_SIZE + 5, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 5, y * GRID_SIZE + 8), 2)
+                
+                # Olho esquerdo
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 12, y * GRID_SIZE + 5, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 15, y * GRID_SIZE + 8), 2)
+            elif snake_direction == (0, 1):  # Baixo
+                # Olho direito
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 2, y * GRID_SIZE + 9, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 5, y * GRID_SIZE + 12), 2)
+                
+                # Olho esquerdo
+                pygame.draw.rect(screen, WHITE, (x * GRID_SIZE + 12, y * GRID_SIZE + 9, 6, 6))
+                pygame.draw.circle(screen, BLACK, (x * GRID_SIZE + 15, y * GRID_SIZE + 12), 2)
+        else:
+            # Corpo da cobra
+            x, y = segment
+            pygame.draw.rect(screen, SNAKE_COLOR, (x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE))
+
+
 
 # Função para colocar a comida em um lugar aleatório no grid
 def place_food():
@@ -202,7 +261,7 @@ def show_game_over(player_name, score):
     draw_text(screen, f'Pontuação final: {score}', 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20, WHITE)
 
     if update_player_score(player_name, score):
-        draw_text(screen, 'Recorde de pontuação pessoal!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60, WHITE)
+        draw_text(screen, 'Nova pontuação recorde!', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60, WHITE)
 
     draw_text(screen, 'Pressione qualquer tecla para jogar novamente', 18, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, WHITE)
     pygame.display.update()
@@ -272,5 +331,6 @@ def main():
         elif choice == 3:
             pygame.quit()
             sys.exit()
+
 
 main()
