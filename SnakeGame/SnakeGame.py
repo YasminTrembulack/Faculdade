@@ -264,11 +264,18 @@ def place_food():
     return (x, y)
 
 # Função para exibir a tela de game over
-# Função para exibir a tela de game over
 def show_game_over(player_name, score):
+    laugh_sound.play()
     screen.fill(BLACK)
+    # Carrega a imagem e redimensiona se necessário
+    game_over_image = pygame.image.load('gato_game_over.jpg').convert()  # Carrega a imagem
+    if game_over_image.get_size() != (SCREEN_WIDTH, SCREEN_HEIGHT):
+        game_over_image = pygame.transform.scale(game_over_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    
     screen.blit(game_over_image, (0, 0))
-    time.sleep(4)
+    pygame.display.update()
+    
+    time.sleep(3)
     draw_text(screen, 'Game Over', 40, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60, WHITE)
     draw_text(screen, f'Pontuação final: {score}', 24, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20, WHITE)
 
@@ -281,6 +288,7 @@ def show_game_over(player_name, score):
 
     # Aguarda o jogador pressionar qualquer tecla para continuar
     wait_for_key()
+
 
 # Função para exibir o menu inicial
 def show_menu():
@@ -336,6 +344,7 @@ def wait_for_key():
 pygame.mixer.init()
 
 eat_sound = pygame.mixer.Sound('eat-sound.ogg')
+laugh_sound = pygame.mixer.Sound('cat-laugh.ogg')
 
 # Função principal para o fluxo do jogo
 def main():

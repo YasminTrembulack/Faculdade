@@ -1,1 +1,5 @@
 maria,1
+aaaa,1
+aa,1
+aaa,0
+aaaaa,0
